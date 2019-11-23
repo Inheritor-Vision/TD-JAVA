@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - ServeurSocket",
+            "request": "launch",
+            "mainClass": "ServeurSocket"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - portScanner",
+            "request": "launch",
+            "mainClass": "portScanner"
+        }
+    ]
+}
