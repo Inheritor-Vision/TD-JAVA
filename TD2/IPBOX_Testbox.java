@@ -2,12 +2,15 @@ import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class IPBOX_Testbox {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SocketException, IOException{
         try{
             
             ServerSocket servSocket = new ServerSocket(6000);
@@ -46,9 +49,33 @@ public class IPBOX_Testbox {
                 }
                 
             }
-
             link.close();
             servSocket.close();
+
+            System.out.println("Testbox: Init UDP connection");
+            DatagramSocket dgramSocketIface= new DatagramSocket();
+            DatagramSocket dgramSocketApp= new DatagramSocket();
+            String message = "random UDP message";
+            InetAddress host = InetAddress.getLocalHost();
+            int portApp = 6002;
+            int portIface = 6003;
+            DatagramPacket outPacketApp= new DatagramPacket(message.getBytes(), message.length(),host, portApp);
+            DatagramPacket outPacketIface= new DatagramPacket(message.getBytes(), message.length(),host, portIface);
+            dgramSocketApp.send(outPacketApp);
+            dgramSocketIface.send(outPacketIface);
+            System.out.println("Testbox: Data sent to both UDP socket");
+            byte[] bufferApp = new byte[256];
+            byte[] bufferIface = new byte[256];
+            DatagramPacket inPacketApp= new DatagramPacket(bufferApp, bufferApp.length);
+            DatagramPacket inPacketIface= new DatagramPacket(bufferIface, bufferIface.length);
+            dgramSocketApp.receive(inPacketApp);
+            String response = new String(inPacketApp.getData(), 0, inPacketApp.getLength());
+            System.out.println("Testbox: data received from App \"" + response + "\"");
+            dgramSocketIface.receive(inPacketIface);
+            response = new String(inPacketIface.getData(), 0, inPacketIface.getLength());
+            System.out.println("Testbox: data received from Iface \"" + response + "\"");
+            dgramSocketApp.close();
+            dgramSocketIface.close();
 
         }catch (IOException e){
             System.out.print("Testbox: Error instanciation Socket ");
