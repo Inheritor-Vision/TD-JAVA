@@ -21,6 +21,7 @@ class ServeurSocket{
             LocalDateTime now = LocalDateTime.now();  
             out.println(dtf.format(now));
             out.println("stop");
+            out.close();
             link.close();
             servSocket.close();
 
