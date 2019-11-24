@@ -21,6 +21,7 @@ public class IPBOX_Testbox {
             System.out.println("Testbox: Client accepted, waiting for data");
             boolean fin =false;
             BufferedReader in = new BufferedReader(new InputStreamReader(link.getInputStream()));
+            BufferedReader inSendConfig = in;
             while(!fin){
                 String temp = in.readLine();
                 if(!temp.isEmpty()){
@@ -30,7 +31,7 @@ public class IPBOX_Testbox {
                 }
                 
             }
-            link.close();
+            Socket linkSendConfig = link;
             System.out.println("Testbox: Start connection to receive-config");
             InetAddress address = InetAddress.getLocalHost();
             System.out.println("Testbox: address " + address);
@@ -104,6 +105,22 @@ public class IPBOX_Testbox {
             
         dgramSocketApp.close();
         dgramSocketIface.close();
+
+        System.out.println("Testbox: Sending send-stat command to SendConfig");
+        PrintWriter dehors = new PrintWriter(linkSendConfig.getOutputStream(),true);
+        dehors.println("send-stat");
+        System.out.println("Testbox: send-stat command sent");
+        System.out.println("Testbox: waiting for response . . . .");
+        fin = false;
+        while(!fin){
+            String temp = inSendConfig.readLine();
+            if(!temp.isEmpty()){
+                System.out.println("Testbox: reception of TCP packet \"" + temp + "\"");
+                fin = true;
+                
+            }
+            
+        }
 
         }catch (IOException e){
             System.out.print("Testbox: Error instanciation Socket ");
