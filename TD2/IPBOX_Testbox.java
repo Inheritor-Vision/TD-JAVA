@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 public class IPBOX_Testbox {
     public static void main(String[] args) throws SocketException, IOException{
@@ -55,6 +56,8 @@ public class IPBOX_Testbox {
             System.out.println("Testbox: Init UDP connection");
             DatagramSocket dgramSocketIface= new DatagramSocket();
             DatagramSocket dgramSocketApp= new DatagramSocket();
+            dgramSocketApp.setSoTimeout(2000);
+            dgramSocketIface.setSoTimeout(2000);
             String message = "random UDP message";
             InetAddress host = InetAddress.getLocalHost();
             int portApp = 6002;
@@ -68,14 +71,39 @@ public class IPBOX_Testbox {
             byte[] bufferIface = new byte[256];
             DatagramPacket inPacketApp= new DatagramPacket(bufferApp, bufferApp.length);
             DatagramPacket inPacketIface= new DatagramPacket(bufferIface, bufferIface.length);
-            dgramSocketApp.receive(inPacketApp);
-            String response = new String(inPacketApp.getData(), 0, inPacketApp.getLength());
-            System.out.println("Testbox: data received from App \"" + response + "\"");
-            dgramSocketIface.receive(inPacketIface);
-            response = new String(inPacketIface.getData(), 0, inPacketIface.getLength());
-            System.out.println("Testbox: data received from Iface \"" + response + "\"");
-            dgramSocketApp.close();
-            dgramSocketIface.close();
+            boolean finApp = false, finIface = false;
+            while (!finApp || !finIface){
+                if(!finApp){
+                    try{
+                        dgramSocketApp.receive(inPacketApp);
+                        String responseApp = new String(inPacketApp.getData(), 0, inPacketApp.getLength());
+                        System.out.println("Testbox: data received from App \"" + responseApp + "\"");
+                        finApp = true;
+                    }catch(SocketTimeoutException e){
+                        System.out.println("Testbox: Resending message to App");
+                        dgramSocketApp.send(outPacketApp);
+                        continue;
+                    } 
+                }
+               
+            if(!finIface){
+                try{
+                    dgramSocketIface.receive(inPacketIface);
+                    String responseIface = new String(inPacketIface.getData(), 0, inPacketIface.getLength());
+                    System.out.println("Testbox: data received from Iface \"" + responseIface + "\"");
+                    finIface = true;
+                }catch(SocketTimeoutException e){
+                    System.out.println("Testbox: Resending message to Iface");
+                    dgramSocketIface.send(outPacketIface);
+                    continue;
+                }
+                
+            }
+        }
+            
+            
+        dgramSocketApp.close();
+        dgramSocketIface.close();
 
         }catch (IOException e){
             System.out.print("Testbox: Error instanciation Socket ");
