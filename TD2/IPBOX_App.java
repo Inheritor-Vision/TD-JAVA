@@ -17,6 +17,7 @@ public class IPBOX_App {
         DatagramPacket inPacket= new DatagramPacket(buffer, buffer.length);
         dgramSocket.receive(inPacket);
         InetAddress clientAddress= inPacket.getAddress();
+        System.out.println("App: temp :" + clientAddress.toString());
         int clientPort= inPacket.getPort();
         String message = new String(inPacket.getData(), 0, inPacket.getLength());
         System.out.println("App: Message received \"" + message + "\"");
